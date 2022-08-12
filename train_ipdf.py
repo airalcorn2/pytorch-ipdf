@@ -12,12 +12,16 @@ def main():
     neg_samples = 4095
     batch_size = 64  # Paper is 128, but that was too large for my GPU.
     train_dataset = SymmetricSolidsDataset(data_dir, "train", SYMSOL_I, neg_samples)
+    num_workers = 2
     train_loader = DataLoader(
-        dataset=train_dataset, batch_size=batch_size, shuffle=True, num_workers=2
+        dataset=train_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
     )
     valid_dataset = SymmetricSolidsDataset(data_dir, "test", SYMSOL_I, neg_samples)
     valid_loader = DataLoader(
-        dataset=valid_dataset, batch_size=batch_size, num_workers=2
+        dataset=valid_dataset, batch_size=batch_size, num_workers=num_workers
     )
 
     # See: https://github.com/google-research/google-research/tree/master/implicit_pdf#reproducing-symsol-results
