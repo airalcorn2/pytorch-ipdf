@@ -1,4 +1,4 @@
-# PyTorch Implicit-PDF
+# PyTorch implicit-PDF
 
 This repository contains a minimal PyTorch implementation of the implicit-PDF (IPDF) model described in "[Implicit-PDF: Non-Parametric Representation of Probability Distributions on the Rotation Manifold"](https://arxiv.org/abs/2106.05965).
 [`train_ipdf.py`](train_ipdf.py) trains an IPDF model using the same hyperparameters described in the paper (except for a smaller batch size) on the SYMSOL I dataset introduced by the authors.
