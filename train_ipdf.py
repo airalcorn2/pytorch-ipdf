@@ -47,21 +47,22 @@ def main():
 
         model.train()
         for (imgs, Rs_fake_Rs, labels) in train_loader:
-            probs = model(imgs.to(device), Rs_fake_Rs.float().to(device))
-            loss = -torch.log(probs).mean()
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            step += 1
-            if step > iterations:
-                break
-
             # See: https://github.com/google-research/google-research/blob/207f63767d55f8e1c2bdeb5907723e5412a231e1/implicit_pdf/train.py#L160.
+            step += 1
             warmup_factor = min(step, warmup_steps) / warmup_steps
             decay_step = max(step - warmup_steps, 0) / (iterations - warmup_steps)
             new_lr = lr * warmup_factor * (1 + np.cos(decay_step * np.pi)) / 2
             for g in optimizer.param_groups:
                 g["lr"] = new_lr
+
+            probs = model(imgs.to(device), Rs_fake_Rs.float().to(device))
+            loss = -torch.log(probs).mean()
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            if step > iterations:
+                break
 
         model.eval()
         valid_loss = 0.0
