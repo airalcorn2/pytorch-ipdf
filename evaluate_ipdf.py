@@ -8,6 +8,9 @@ from symmetric_solids_dataset import SymmetricSolidsDataset, SYMSOL_I
 from torch.utils.data import DataLoader
 from train_ipdf import DATA_DIR, DEVICE, PARAMS_F
 
+NUMBER_QUERIES = 2000000
+BATCH_SIZE = 2**18
+
 
 def generate_healpix_grid(recursion_level=None, size=None):
     # See: # https://github.com/google-research/google-research/blob/4d906a25489bb7859a88d982a6c5e68dd890139b/implicit_pdf/models.py#L380.
@@ -36,9 +39,8 @@ def generate_healpix_grid(recursion_level=None, size=None):
 def main():
     # See: https://github.com/google-research/google-research/blob/4d906a25489bb7859a88d982a6c5e68dd890139b/implicit_pdf/models.py#L272
     # and Section 3.4/Figure 2.
-    number_queries = 2000000
     grid_sizes = 72 * 8 ** np.arange(7)
-    size = grid_sizes[np.argmin(np.abs(np.log(number_queries) - np.log(grid_sizes)))]
+    size = grid_sizes[np.argmin(np.abs(np.log(NUMBER_QUERIES) - np.log(grid_sizes)))]
     R_grid = generate_healpix_grid(size=size)
     V = np.pi**2 / len(R_grid)
 
@@ -50,8 +52,7 @@ def main():
     valid_loader = DataLoader(dataset=valid_dataset, batch_size=1)
 
     valid_loss = 0.0
-    batch_size = 2**18
-    n_batches = int(np.ceil(len(R_grid) / batch_size))
+    n_batches = int(np.ceil(len(R_grid) / BATCH_SIZE))
     with torch.no_grad():
         for (imgs, Rs_fake_Rs) in valid_loader:
             # See: https://github.com/google-research/google-research/blob/4d906a25489bb7859a88d982a6c5e68dd890139b/implicit_pdf/models.py#L154.
@@ -60,8 +61,8 @@ def main():
             R_grid_new = R_grid @ R_delta
             scores = []
             for batch_idx in range(n_batches):
-                start = batch_idx * batch_size
-                end = start + batch_size
+                start = batch_idx * BATCH_SIZE
+                end = start + BATCH_SIZE
                 R_batch = R_grid_new[start:end].reshape(1, -1, 9)
                 scores.append(model.get_scores(imgs.to(DEVICE), R_batch.to(DEVICE)))
 
