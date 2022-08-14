@@ -14,8 +14,9 @@ class IPDF(nn.Module):
         self.L = 3
         R_feats = 2 * self.L * 9
         n_hidden_nodes = 256
+        self.img_linear = nn.Linear(visual_embedding_size, n_hidden_nodes)
+        self.R_linear = nn.Linear(R_feats, n_hidden_nodes)
         self.mlp = nn.Sequential(
-            nn.Linear(visual_embedding_size + R_feats, n_hidden_nodes),
             nn.ReLU(),
             nn.Linear(n_hidden_nodes, n_hidden_nodes),
             nn.ReLU(),
@@ -38,7 +39,7 @@ class IPDF(nn.Module):
         x = self.cnn.layer4(x)
 
         x = self.cnn.avgpool(x)
-        x = torch.flatten(x, 1).unsqueeze(1).repeat(1, Rs.shape[1], 1)
+        x = torch.flatten(x, 1)
 
         Rs_encoded = []
         for l_pos in range(self.L):
@@ -46,8 +47,11 @@ class IPDF(nn.Module):
             Rs_encoded.append(torch.cos(2**l_pos * torch.pi * Rs))
 
         Rs_encoded = torch.cat(Rs_encoded, dim=-1)
-        x = torch.cat([x, Rs_encoded], dim=-1)
-        x = self.mlp(x).squeeze(2)
+
+        # See Equation (9) in Section S8 and:
+        # https://github.com/google-research/google-research/blob/4d906a25489bb7859a88d982a6c5e68dd890139b/implicit_pdf/models.py#L120-L126.
+        x = self.img_linear(x).unsqueeze(1) + self.R_linear(Rs_encoded)
+        x = self.mlp(x)
 
         return x
 
