@@ -51,7 +51,7 @@ class IPDF(nn.Module):
         # See Equation (9) in Section S8 and:
         # https://github.com/google-research/google-research/blob/4d906a25489bb7859a88d982a6c5e68dd890139b/implicit_pdf/models.py#L120-L126.
         x = self.img_linear(x).unsqueeze(1) + self.R_linear(Rs_encoded)
-        x = self.mlp(x)
+        x = self.mlp(x).squeeze(2)
 
         return x
 
