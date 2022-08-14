@@ -34,7 +34,7 @@ def evaluate():
     batch_size = 2**18
     n_batches = int(np.ceil(len(R_grid) / batch_size))
     with torch.no_grad():
-        for (idx, (imgs, Rs_fake_Rs)) in enumerate(valid_loader):
+        for (imgs, Rs_fake_Rs) in valid_loader:
             # See: https://github.com/google-research/google-research/blob/4d906a25489bb7859a88d982a6c5e68dd890139b/implicit_pdf/models.py#L154.
             R = Rs_fake_Rs[0, 0].reshape(3, 3).float().to(DEVICE)
             R_delta = R_grid[0].T @ R
