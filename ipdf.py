@@ -26,7 +26,7 @@ class IPDF(nn.Module):
             nn.Linear(n_hidden_nodes, 1),
         )
 
-    def get_probs(self, imgs, Rs_fake_Rs):
+    def get_scores(self, imgs, Rs):
         x = self.cnn.conv1(imgs)
         x = self.cnn.bn1(x)
         x = self.cnn.relu(x)
@@ -38,22 +38,22 @@ class IPDF(nn.Module):
         x = self.cnn.layer4(x)
 
         x = self.cnn.avgpool(x)
-        x = torch.flatten(x, 1).unsqueeze(1).repeat(1, Rs_fake_Rs.shape[1], 1)
+        x = torch.flatten(x, 1).unsqueeze(1).repeat(1, Rs.shape[1], 1)
 
-        Rs_fake_Rs_encoded = []
+        Rs_encoded = []
         for l_pos in range(self.L):
-            Rs_fake_Rs_encoded.append(torch.sin(2**l_pos * torch.pi * Rs_fake_Rs))
-            Rs_fake_Rs_encoded.append(torch.cos(2**l_pos * torch.pi * Rs_fake_Rs))
+            Rs_encoded.append(torch.sin(2**l_pos * torch.pi * Rs))
+            Rs_encoded.append(torch.cos(2**l_pos * torch.pi * Rs))
 
-        Rs_fake_Rs_encoded = torch.cat(Rs_fake_Rs_encoded, dim=-1)
-        x = torch.cat([x, Rs_fake_Rs_encoded], dim=-1)
+        Rs_encoded = torch.cat(Rs_encoded, dim=-1)
+        x = torch.cat([x, Rs_encoded], dim=-1)
         x = self.mlp(x).squeeze(2)
-        probs = torch.softmax(x, 1)
-        return probs
+
+        return x
 
     def forward(self, imgs, Rs_fake_Rs):
         # See: https://github.com/google-research/google-research/blob/207f63767d55f8e1c2bdeb5907723e5412a231e1/implicit_pdf/models.py#L188
         # and Equation (2) in the paper.
         V = torch.pi**2 / Rs_fake_Rs.shape[1]
-        probs = 1 / V * self.get_probs(imgs, Rs_fake_Rs)[:, 0]
+        probs = 1 / V * torch.softmax(self.get_scores(imgs, Rs_fake_Rs), 1)[:, 0]
         return probs
