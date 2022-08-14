@@ -67,4 +67,4 @@ class SymmetricSolidsDataset(Dataset):
 
         R_fake_Rs = np.concatenate([R[None], fake_Rs])
 
-        return (img, R_fake_Rs.reshape(-1, 9), 0)
+        return (img, R_fake_Rs.reshape(-1, 9))

@@ -10,8 +10,8 @@ from torch.utils.data import DataLoader
 def main():
     data_dir = "symmetric_solids"
     neg_samples = 4095
-    batch_size = 64  # Paper is 128, but that was too large for my GPU.
     train_dataset = SymmetricSolidsDataset(data_dir, "train", SYMSOL_I, neg_samples)
+    batch_size = 64  # Paper is 128, but that was too large for my GPU.
     num_workers = 2
     train_loader = DataLoader(
         dataset=train_dataset,
@@ -46,7 +46,7 @@ def main():
             break
 
         model.train()
-        for (imgs, Rs_fake_Rs, labels) in train_loader:
+        for (imgs, Rs_fake_Rs) in train_loader:
             # See: https://github.com/google-research/google-research/blob/207f63767d55f8e1c2bdeb5907723e5412a231e1/implicit_pdf/train.py#L160.
             step += 1
             warmup_factor = min(step, warmup_steps) / warmup_steps
@@ -68,7 +68,7 @@ def main():
         valid_loss = 0.0
         n_valid = 0
         with torch.no_grad():
-            for (imgs, Rs_fake_Rs, labels) in valid_loader:
+            for (imgs, Rs_fake_Rs) in valid_loader:
                 probs = model(imgs.to(device), Rs_fake_Rs.float().to(device))
                 loss = -torch.log(probs).mean()
                 valid_loss += loss.item()
