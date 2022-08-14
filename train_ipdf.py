@@ -10,7 +10,7 @@ DATA_DIR = "symmetric_solids"
 NEG_SAMPLES = 4095
 PARAMS_F = "best_params.pth"
 DEVICE = "cuda:0"
-BATCH_SIZE = 64  # Paper is 128, but that was too large for my GPU.
+BATCH_SIZE = 128
 NUM_WORKERS = 2
 # See: https://github.com/google-research/google-research/tree/master/implicit_pdf#reproducing-symsol-results
 # and Section S8.
