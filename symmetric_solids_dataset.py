@@ -20,14 +20,14 @@ class SymmetricSolidsDataset(Dataset):
         self.data_dir = data_dir
         self.dataset = dataset
         try:
-            rotations = np.load(f"{data_dir}/{self.dataset}/rotations.npz")
+            rotations = np.load(f"{data_dir}/{dataset}/rotations.npz")
         except FileNotFoundError:
             temp_dir = f"{data_dir}_temp"
             _ = tfds.load("symmetric_solids", data_dir=temp_dir)
             zip_dir = os.listdir(f"{temp_dir}/downloads/extracted")[0]
             shutil.move(f"{temp_dir}/downloads/extracted/{zip_dir}", data_dir)
             shutil.rmtree(temp_dir)
-            rotations = np.load(f"{data_dir}/{self.dataset}/rotations.npz")
+            rotations = np.load(f"{data_dir}/{dataset}/rotations.npz")
 
         Rs = {}
         for shape in rotations:
@@ -35,7 +35,7 @@ class SymmetricSolidsDataset(Dataset):
 
         self.Rs = Rs
 
-        img_fs = os.listdir(f"{data_dir}/{self.dataset}/images")
+        img_fs = os.listdir(f"{data_dir}/{dataset}/images")
         img_fs = [img_f for img_f in img_fs if img_f.split("_")[0] in subset]
         self.img_fs = img_fs
 
