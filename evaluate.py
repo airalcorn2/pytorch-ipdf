@@ -6,7 +6,7 @@ from ipdf import IPDF
 from scipy.spatial.transform import Rotation
 from symmetric_solids_dataset import SymmetricSolidsDataset, SYMSOL_I
 from torch.utils.data import DataLoader
-from train_ipdf import DATA_DIR, DEVICE, PARAMS_F
+from train import DATA_DIR, DEVICE, PARAMS_F
 
 NUMBER_QUERIES = 2000000
 BATCH_SIZE = 2**18
