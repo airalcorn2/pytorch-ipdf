@@ -32,8 +32,7 @@ def main():
         dataset=valid_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS
     )
 
-    device = "cuda:0"
-    model = IPDF().to(device)
+    model = IPDF().to(DEVICE)
     print(model)
     n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"Parameters: {n_params}")
@@ -56,7 +55,7 @@ def main():
             for g in optimizer.param_groups:
                 g["lr"] = new_lr
 
-            probs = model(imgs.to(device), Rs_fake_Rs.float().to(device))
+            probs = model(imgs.to(DEVICE), Rs_fake_Rs.float().to(DEVICE))
             loss = -torch.log(probs).mean()
             optimizer.zero_grad()
             loss.backward()
@@ -70,7 +69,7 @@ def main():
         n_valid = 0
         with torch.no_grad():
             for (imgs, Rs_fake_Rs) in valid_loader:
-                probs = model(imgs.to(device), Rs_fake_Rs.float().to(device))
+                probs = model(imgs.to(DEVICE), Rs_fake_Rs.float().to(DEVICE))
                 loss = -torch.log(probs).mean()
                 valid_loss += loss.item()
                 n_valid += 1
