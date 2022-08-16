@@ -9,7 +9,6 @@ from torch.utils.data import DataLoader
 from train import DATA_DIR, DEVICE, PARAMS_F
 
 NUMBER_QUERIES = 2000000
-BATCH_SIZE = 2**18
 
 
 def generate_healpix_grid(recursion_level=None, size=None):
@@ -52,22 +51,14 @@ def main():
     valid_loader = DataLoader(dataset=valid_dataset, batch_size=1)
 
     valid_loss = 0.0
-    n_batches = int(np.ceil(len(R_grid) / BATCH_SIZE))
     with torch.no_grad():
         for (imgs, Rs_fake_Rs) in valid_loader:
             # See: https://github.com/google-research/google-research/blob/4d906a25489bb7859a88d982a6c5e68dd890139b/implicit_pdf/models.py#L154.
             R = Rs_fake_Rs[0, 0].reshape(3, 3).float().to(DEVICE)
             R_delta = R_grid[0].T @ R
-            R_grid_new = R_grid @ R_delta
-            scores = []
-            for batch_idx in range(n_batches):
-                start = batch_idx * BATCH_SIZE
-                end = start + BATCH_SIZE
-                R_batch = R_grid_new[start:end].reshape(1, -1, 9)
-                scores.append(model.get_scores(imgs.to(DEVICE), R_batch.to(DEVICE)))
-
-            scores = torch.cat(scores).flatten()
-            prob = 1 / V * torch.softmax(scores, 0)[0]
+            R_grid_new = (R_grid @ R_delta).reshape(1, -1, 9)
+            scores = model.get_scores(imgs.to(DEVICE), R_grid_new.to(DEVICE))
+            prob = 1 / V * torch.softmax(scores.flatten(), 0)[0]
             loss = -torch.log(prob)
             valid_loss += loss.item()
 
