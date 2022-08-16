@@ -41,7 +41,6 @@ def main():
     grid_sizes = 72 * 8 ** np.arange(7)
     size = grid_sizes[np.argmin(np.abs(np.log(NUMBER_QUERIES) - np.log(grid_sizes)))]
     R_grid = generate_healpix_grid(size=size)
-    V = np.pi**2 / len(R_grid)
 
     model = IPDF().to(DEVICE)
     model.load_state_dict(torch.load(PARAMS_F))
@@ -57,9 +56,8 @@ def main():
             R = Rs_fake_Rs[0, 0].reshape(3, 3).float().to(DEVICE)
             R_delta = R_grid[0].T @ R
             R_grid_new = (R_grid @ R_delta).reshape(1, -1, 9)
-            scores = model.get_scores(imgs.to(DEVICE), R_grid_new.to(DEVICE))
-            prob = 1 / V * torch.softmax(scores.flatten(), 0)[0]
-            loss = -torch.log(prob)
+            probs = model(imgs.to(DEVICE), R_grid_new.to(DEVICE))
+            loss = -torch.log(probs).mean()
             valid_loss += loss.item()
 
     valid_loss /= len(valid_dataset)
