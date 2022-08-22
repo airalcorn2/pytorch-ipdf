@@ -59,12 +59,7 @@ class SymmetricSolidsDataset(Dataset):
         img = Image.open(f"{self.data_dir}/{self.dataset}/images/{img_f}")
         img = self.preprocess(img)
 
-        yaws = np.random.uniform(-np.pi, np.pi, self.neg_samples)
-        pitches = np.random.uniform(-np.pi, np.pi, self.neg_samples)
-        rolls = np.random.uniform(-np.pi, np.pi, self.neg_samples)
-        r = Rotation.from_euler("YXZ", np.stack([yaws, pitches, rolls]).T)
-        fake_Rs = r.as_matrix()
-
+        fake_Rs = Rotation.random(self.neg_samples).as_matrix()
         R_fake_Rs = np.concatenate([R[None], fake_Rs])
 
         return (img, R_fake_Rs.reshape(-1, 9))
